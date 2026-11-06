@@ -1,6 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import{createRoot}from'react-dom/client';
 import{useWallet,useConnection}from'@solana/wallet-adapter-react';
+import{Connection}from'@solana/web3.js';
 import SolanaWalletProvider from'./SolanaWalletProvider';
 import{Menu,Wallet,UploadCloud,ChevronDown,RefreshCw,Copy,Zap,MessageCircle,BriefcaseBusiness,X,ArrowRight,Check,ExternalLink}from'lucide-react';
 import './style.css';
@@ -26,7 +27,7 @@ function App(){
  const [balance,setBalance]=useState(null);
  const [pendingWallet,setPendingWallet]=useState(null);
  useEffect(()=>{if(!pendingWallet||!activeWallet||activeWallet.adapter.name!==pendingWallet)return;connect().then(()=>{setPendingWallet(null);setWallet(false)}).catch(e=>{setPendingWallet(null);setNotice(e?.message||'Wallet connection failed')})},[pendingWallet,activeWallet,connect]);
- useEffect(()=>{if(!connected||!publicKey){setBalance(null);return}let alive=true;connection.getBalance(publicKey).then(v=>{if(alive)setBalance(v/1e9)}).catch(()=>{if(alive)setBalance(null)});const id=setInterval(()=>connection.getBalance(publicKey).then(v=>{if(alive)setBalance(v/1e9)}).catch(()=>{}),20000);return()=>{alive=false;clearInterval(id)}},[connected,publicKey,connection]);
+ useEffect(()=>{if(!connected||!publicKey){setBalance(null);return}let alive=true;let busy=false;const backupConnection=new Connection('https://solana-rpc.publicnode.com','confirmed');const loadBalance=async()=>{if(busy)return;busy=true;try{let lamports;try{lamports=await connection.getBalance(publicKey,'confirmed')}catch{lamports=await backupConnection.getBalance(publicKey,'confirmed')}if(alive)setBalance(lamports/1e9)}catch{if(alive)setBalance(Number.NaN)}finally{busy=false}};setBalance(null);loadBalance();const id=setInterval(loadBalance,15000);return()=>{alive=false;clearInterval(id)}},[connected,publicKey,connection]);
  const shortAddress=publicKey?publicKey.toBase58().slice(0,4)+'...'+publicKey.toBase58().slice(-4):'';
  const [page,setPage]=useState('launch'),[menu,setMenu]=useState(false),[wallet,setWallet]=useState(false),[step,setStep]=useState(1),[coin,setCoin]=useState({name:'',symbol:'',image:null,description:'',decimals:'9',supply:'1000000000'}),[preview,setPreview]=useState(''),[faq,setFaq]=useState(-1),[tab,setTab]=useState('Trending'),[notice,setNotice]=useState(''),[token,setToken]=useState('');
  const notify=t=>{setNotice(t);setTimeout(()=>setNotice(''),3000)};
@@ -55,7 +56,7 @@ function App(){
  {page==='tracker'&&<section className="tracker-page"><h2>𝕏 Tracker - Real Time</h2><div className="tracker-empty"><div className="tracker-icon"><BriefcaseBusiness/></div><h3>Connect your wallet</h3><p>Connect your Solana wallet to access the real-time tweet<br/> tracker and create tokens directly from tweets.</p><button className="next" onClick={()=>setWallet(true)}>Connect Wallet</button></div></section>}
  <footer><p>LaunchMeme is a non-custodial software interface that allows users to interact with public smart contracts on the Solana blockchain. We do not custody funds, execute transactions, provide financial advice, or guarantee outcomes. All actions are performed on-chain and approved by the user's wallet. Use at your own risk. See Terms of Use and Privacy Policy for details.</p><div><span>© 2025 LaunchMeme | All Rights Reserved</span><span>Learn　|　Terms of Use　|　Privacy Policy　|　🇺🇸 EN⌄</span></div></footer>
  </main>
- {wallet&&<div className="overlay" onClick={()=>setWallet(false)}><section className="wallet-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setWallet(false)}><X/></button><h3>Connect Wallet</h3>{connected?<><div className="wallet-connected"><strong>{shortAddress}</strong><span>{balance===null?'SOL balance loading…':balance.toFixed(4)+' SOL'}</span></div><button className="wallet-choice" onClick={()=>{disconnect();setWallet(false)}}>Disconnect wallet<ArrowRight size={16}/></button></>:['Phantom','Solflare','Backpack'].map(w=><button className="wallet-choice" key={w} onClick={()=>{setPendingWallet(w);select(w)}}>{w}<ArrowRight size={16}/></button>)}<small>Connect using your wallet app. Never share your recovery phrase.</small></section></div>}
+ {wallet&&<div className="overlay" onClick={()=>setWallet(false)}><section className="wallet-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setWallet(false)}><X/></button><h3>Connect Wallet</h3>{connected?<><div className="wallet-connected"><strong>{shortAddress}</strong><span>{balance===null?'SOL balance loading…':Number.isFinite(balance)?balance.toFixed(4)+' SOL':'Balance unavailable — retrying'}</span></div><button className="wallet-choice" onClick={()=>{disconnect();setWallet(false)}}>Disconnect wallet<ArrowRight size={16}/></button></>:['Phantom','Solflare','Backpack'].map(w=><button className="wallet-choice" key={w} onClick={()=>{setPendingWallet(w);select(w)}}>{w}<ArrowRight size={16}/></button>)}<small>Connect using your wallet app. Never share your recovery phrase.</small></section></div>}
  {notice&&<div className="toast">{notice}</div>}
  </div>
 }
