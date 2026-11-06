@@ -1,4 +1,6 @@
 import React,{useState,useEffect} from 'react';
+import{Buffer}from'buffer';
+if(typeof globalThis.Buffer==='undefined')globalThis.Buffer=Buffer;
 import{createRoot}from'react-dom/client';
 import{useWallet,useConnection}from'@solana/wallet-adapter-react';
 import{Connection,Keypair,SystemProgram,Transaction}from'@solana/web3.js';
