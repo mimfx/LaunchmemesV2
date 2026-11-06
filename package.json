@@ -9,6 +9,10 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
+    "@solana/web3.js": "latest",
+    "@solana/wallet-adapter-base": "latest",
+    "@solana/wallet-adapter-react": "latest",
+    "@solana/wallet-adapter-wallets": "latest",
     "@vitejs/plugin-react": "latest",
     "vite": "latest",
     "react": "latest",
