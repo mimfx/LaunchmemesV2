@@ -11,5 +11,5 @@ export default function SolanaWalletProvider({children}){
   new SolflareWalletAdapter(),
   new BackpackWalletAdapter()
  ],[]);
- return <ConnectionProvider endpoint={endpoint}><WalletProvider wallets={wallets} autoConnect>{children}</WalletProvider></ConnectionProvider>;
+ return <ConnectionProvider endpoint={endpoint}><WalletProvider wallets={wallets} autoConnect>{children}</WalletProvider></SolanaWalletProvider>;
 }
