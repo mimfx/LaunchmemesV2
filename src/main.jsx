@@ -1,5 +1,7 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import{createRoot}from'react-dom/client';
+import{useWallet,useConnection}from'@solana/wallet-adapter-react';
+import SolanaWalletProvider from'./SolanaWalletProvider';
 import{Menu,Wallet,UploadCloud,ChevronDown,RefreshCw,Copy,Zap,MessageCircle,BriefcaseBusiness,X,ArrowRight,Check,ExternalLink}from'lucide-react';
 import './style.css';
 
@@ -19,6 +21,13 @@ const trending=[
 ];
 const newer=[trending[2],{name:'bruh',symbol:'Sbruh',cap:'$3,138',age:'39s ago',address:'BRUH_TOKEN_ADDRESS',color:'avatar-m'},{name:'Cartoon Money',symbol:'SCBUCKS',cap:'$1,729,680',age:'1m ago',address:'CARTOONMONEY_TOKEN_ADDRESS',color:'avatar-n'},...trending.slice(3)];
 function App(){
+ const {publicKey,connected,wallet:activeWallet,select,connect,disconnect}=useWallet();
+ const {connection}=useConnection();
+ const [balance,setBalance]=useState(null);
+ const [pendingWallet,setPendingWallet]=useState(null);
+ useEffect(()=>{if(!pendingWallet||!activeWallet||activeWallet.adapter.name!==pendingWallet)return;connect().then(()=>{setPendingWallet(null);setWallet(false)}).catch(e=>{setPendingWallet(null);setNotice(e?.message||'Wallet connection failed')})},[pendingWallet,activeWallet,connect]);
+ useEffect(()=>{if(!connected||!publicKey){setBalance(null);return}let alive=true;connection.getBalance(publicKey).then(v=>{if(alive)setBalance(v/1e9)}).catch(()=>{if(alive)setBalance(null)});const id=setInterval(()=>connection.getBalance(publicKey).then(v=>{if(alive)setBalance(v/1e9)}).catch(()=>{}),20000);return()=>{alive=false;clearInterval(id)}},[connected,publicKey,connection]);
+ const shortAddress=publicKey?publicKey.toBase58().slice(0,4)+'...'+publicKey.toBase58().slice(-4):'';
  const [page,setPage]=useState('launch'),[menu,setMenu]=useState(false),[wallet,setWallet]=useState(false),[step,setStep]=useState(1),[coin,setCoin]=useState({name:'',symbol:'',image:null,description:'',decimals:'9',supply:'1000000000'}),[preview,setPreview]=useState(''),[faq,setFaq]=useState(-1),[tab,setTab]=useState('Trending'),[notice,setNotice]=useState(''),[token,setToken]=useState('');
  const notify=t=>{setNotice(t);setTimeout(()=>setNotice(''),3000)};
  const pages=[['launch','Launch Coin'],['liquidity','Liquidity Pool'],['trending','Copy Trending Coins'],['tracker','X Tracker']];
@@ -29,7 +38,7 @@ function App(){
  const faqs=['What is DeployToken?','How do I create a token?','Are there any fees?','How does liquidity management work on DeployToken?'];
  return <div className="app">
  <div className="promo">⚠️ LAST CHANCE: 0.1 SOL CREATE COIN FEE (BACK TO 0.2 SOL IN 24H)</div>
- <header><button className="hamb" onClick={()=>setMenu(!menu)} aria-label="Menu"><Menu/></button><button className="brand" onClick={()=>selectPage('launch')}><span>🚀</span>LaunchMeme</button><nav>{pages.map(([id,label])=><button key={id} className={page===id?'active':''} onClick={()=>selectPage(id)}>{label}</button>)}</nav><button className="connect" onClick={()=>setWallet(true)}><Wallet size={16}/> Connect Wallet</button></header>
+ <header><button className="hamb" onClick={()=>setMenu(!menu)} aria-label="Menu"><Menu/></button><button className="brand" onClick={()=>selectPage('launch')}><span>🚀</span>LaunchMeme</button><nav>{pages.map(([id,label])=><button key={id} className={page===id?'active':''} onClick={()=>selectPage(id)}>{label}</button>)}</nav><button className="connect" onClick={()=>setWallet(true)}><Wallet size={16}/> {connected?shortAddress:'Connect Wallet'}</button></header>
  {menu&&<div className="mobile-nav">{pages.map(([id,label])=><button key={id} onClick={()=>selectPage(id)}>{label}<ArrowRight size={15}/></button>)}</div>}
  <main>
  {page==='launch'&&<><section className="hero"><h1>Launch Your Own Coin FAST ⚡</h1><p>Launch your own token on Solana in seconds. No coding required.</p></section>
@@ -46,8 +55,8 @@ function App(){
  {page==='tracker'&&<section className="tracker-page"><h2>𝕏 Tracker - Real Time</h2><div className="tracker-empty"><div className="tracker-icon"><BriefcaseBusiness/></div><h3>Connect your wallet</h3><p>Connect your Solana wallet to access the real-time tweet<br/> tracker and create tokens directly from tweets.</p><button className="next" onClick={()=>setWallet(true)}>Connect Wallet</button></div></section>}
  <footer><p>LaunchMeme is a non-custodial software interface that allows users to interact with public smart contracts on the Solana blockchain. We do not custody funds, execute transactions, provide financial advice, or guarantee outcomes. All actions are performed on-chain and approved by the user's wallet. Use at your own risk. See Terms of Use and Privacy Policy for details.</p><div><span>© 2025 LaunchMeme | All Rights Reserved</span><span>Learn　|　Terms of Use　|　Privacy Policy　|　🇺🇸 EN⌄</span></div></footer>
  </main>
- {wallet&&<div className="overlay" onClick={()=>setWallet(false)}><section className="wallet-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setWallet(false)}><X/></button><h3>Connect Wallet</h3>{['Phantom','Solflare','Backpack'].map(w=><button className="wallet-choice" key={w} onClick={()=>notify(w+' wallet integration is not connected yet.')}>{w}<ArrowRight size={16}/></button>)}<small>Never share your recovery phrase.</small></section></div>}
+ {wallet&&<div className="overlay" onClick={()=>setWallet(false)}><section className="wallet-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setWallet(false)}><X/></button><h3>Connect Wallet</h3>{connected?<><div className="wallet-connected"><strong>{shortAddress}</strong><span>{balance===null?'SOL balance loading…':balance.toFixed(4)+' SOL'}</span></div><button className="wallet-choice" onClick={()=>{disconnect();setWallet(false)}}>Disconnect wallet<ArrowRight size={16}/></button></>:['Phantom','Solflare','Backpack'].map(w=><button className="wallet-choice" key={w} onClick={()=>{setPendingWallet(w);select(w)}}>{w}<ArrowRight size={16}/></button>)}<small>Connect using your wallet app. Never share your recovery phrase.</small></section></div>}
  {notice&&<div className="toast">{notice}</div>}
  </div>
 }
-createRoot(document.getElementById('root')).render(<App/>);
+createRoot(document.getElementById('root')).render(<SolanaWalletProvider><App/></SolanaWalletProvider>);
