@@ -5,7 +5,7 @@ import{SolflareWalletAdapter}from'@solana/wallet-adapter-solflare';
 import{BackpackWalletAdapter}from'@solana/wallet-adapter-backpack';
 
 export default function SolanaWalletProvider({children}){
- const endpoint=import.meta.env.VITE_SOLANA_RPC_URL||'https://api.mainnet-beta.solana.com';
+ const endpoint=import.meta.env.VITE_SOLANA_RPC_URL||'https://solana-rpc.publicnode.com';
  const wallets=useMemo(()=>[
   new PhantomWalletAdapter(),
   new SolflareWalletAdapter(),
