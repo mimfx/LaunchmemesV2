@@ -3,7 +3,7 @@ import{Buffer}from'buffer';
 if(typeof globalThis.Buffer==='undefined')globalThis.Buffer=Buffer;
 import{createRoot}from'react-dom/client';
 import{useWallet,useConnection}from'@solana/wallet-adapter-react';
-import{Connection,Keypair,SystemProgram,Transaction}from'@solana/web3.js';
+import{Connection,Keypair,PublicKey,SystemProgram,Transaction}from'@solana/web3.js';
 import{createCreateMetadataAccountV3Instruction,PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID}from'@metaplex-foundation/mpl-token-metadata';
 import{MINT_SIZE,TOKEN_PROGRAM_ID,createInitializeMintInstruction,getAssociatedTokenAddressSync,createAssociatedTokenAccountInstruction,createMintToInstruction}from'@solana/spl-token';
 import SolanaWalletProvider from'./SolanaWalletProvider';
