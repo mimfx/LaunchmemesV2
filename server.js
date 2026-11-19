@@ -13,6 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 10000);
 const RPC_URL = process.env.SOLANA_MAINNET_RPC_URL || 'https://solana-rpc.publicnode.com';
 const MAINNET_GENESIS = '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2';
+const RAYDIUM_CPMM_PROGRAM = 'CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C';
 const connection = new Connection(RPC_URL, 'confirmed');
 const pool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false }, max: 8, idleTimeoutMillis: 30000, connectionTimeoutMillis: 10000 }) : null;
 let mainnetVerified = false;
@@ -154,6 +155,7 @@ app.post('/api/pools', async (req, res) => {
     const account = await connection.getAccountInfo(new PublicKey(poolAddress), 'confirmed');
     if (!account) return res.status(400).json({ error: 'Pool account does not exist on Mainnet.' });
     const programId = account.owner.toBase58();
+    if (programId !== RAYDIUM_CPMM_PROGRAM || !keys.includes(RAYDIUM_CPMM_PROGRAM)) return res.status(400).json({ error: 'Pool account is not owned by the official Raydium CPMM Mainnet program.' });
     await pool.query('INSERT INTO pools (pool_address,program_id,pool_type,base_mint,quote_mint,creator_wallet,creation_signature,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (pool_address) DO NOTHING',
       [poolAddress,programId,'raydium-cpmm',mintA,mintB,creatorWallet,signature,'confirmed']);
     await pool.query('INSERT INTO transactions (signature,wallet_address,type,pool_address,status,slot,block_time) VALUES ($1,$2,$3,$4,$5,$6,CASE WHEN $7::bigint IS NULL THEN NULL ELSE to_timestamp($7) END) ON CONFLICT (signature) DO NOTHING',
@@ -174,6 +176,7 @@ app.post('/api/transactions', async (req, res) => {
     const tx = await verifiedTransaction(signature,walletAddress);
     const keys = tx.transaction.message.getAccountKeys().staticAccountKeys.map(k => k.toBase58());
     if (poolAddress && !keys.includes(poolAddress)) return res.status(400).json({ error: 'Transaction does not reference the supplied pool.' });
+    if (poolAddress) { const poolAccount = await connection.getAccountInfo(new PublicKey(poolAddress), 'confirmed'); if (!poolAccount || poolAccount.owner.toBase58() !== RAYDIUM_CPMM_PROGRAM) return res.status(400).json({ error: 'Pool is not a verified Raydium CPMM Mainnet account.' }); }
     if (relatedMint && !keys.includes(relatedMint)) return res.status(400).json({ error: 'Transaction does not reference the supplied mint.' });
     await pool.query('INSERT INTO transactions (signature,wallet_address,type,related_mint,pool_address,status,slot,block_time) VALUES ($1,$2,$3,$4,$5,$6,$7,CASE WHEN $8::bigint IS NULL THEN NULL ELSE to_timestamp($8) END) ON CONFLICT (signature) DO NOTHING',
       [signature,walletAddress,type,relatedMint,poolAddress,'confirmed',tx.slot,tx.blockTime || null]);
