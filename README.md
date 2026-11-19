@@ -4,7 +4,7 @@ A non-custodial Solana Mainnet-Beta token launch workspace. All on-chain actions
 
 ## Current implementation
 
-- Responsive Nexora-style platform UI; legacy launchpad styles and sample-token UI are retired.
+- Responsive premium dark LaunchmemesV2 platform UI; legacy launchpad styles and sample-token UI are retired.
 - Phantom, Solflare and Backpack wallet adapters.
 - Mainnet genesis-hash verification in the browser and API server. No Devnet fallback.
 - Confirmed SOL balance reads.
