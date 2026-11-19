@@ -7,3 +7,5 @@
 .liquidity-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.liquidity-tabs button{border:1px solid #30334a;background:#0d1020;color:#a4a6ba;border-radius:8px;padding:10px 13px;font:600 11px 'DM Sans';cursor:pointer}.liquidity-tabs button.chosen{background:#282044;border-color:#6653a4;color:#d6caff}.liquidity-card{max-width:850px}
 
 .liquidity-tabs{margin-bottom:22px}.liquidity-card .step{white-space:nowrap}
+
+.pool-results{margin-top:18px;border-top:1px solid #292c40}.pool-result{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #292c40}.pool-result b,.pool-result small{display:block}.pool-result b{font-size:12px;color:#f1f1f7}.pool-result small{font-size:10px;color:#888ba2;margin-top:5px;overflow-wrap:anywhere}.pool-result button{flex-shrink:0}
