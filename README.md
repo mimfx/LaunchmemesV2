@@ -54,8 +54,8 @@ The API creates the tables at startup when `DATABASE_URL` is configured. The can
 - Token creation requires Mainnet verification, a connected wallet, Pinata credentials, and wallet approval. The mint transaction is not custodially signed.
 - A token is only displayed as created after a confirmed Mainnet transaction.
 - Database history is only recorded after the API independently retrieves the confirmed transaction and verifies the fee payer and mint account.
-- Liquidity pool creation and add/remove liquidity are not yet enabled. They require a verified Raydium SDK integration and mainnet transaction tests; the UI does not simulate them.
-- X tracking returns an explicit setup/API error when the official X API is not configured or the plan rejects the request.
+- Raydium CPMM pool discovery by mint pair, pool creation, add liquidity and remove liquidity are wired to the official Raydium SDK v2. Pool creation records are accepted only after the API verifies the confirmed transaction and the pool account owner matches the official CPMM program. Add/remove transactions are recorded only after confirmation. CLMM and legacy AMM pool types are not supported in this first liquidity release.
+- X tracking uses the official X API v2 recent-search endpoint and returns an explicit setup/API error when credentials are absent or the plan rejects the request.
 - Market data is third-party data and may be rate-limited or incomplete.
 - No fabricated market rows, balances, pool positions or transaction confirmations are used.
 
