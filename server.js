@@ -144,6 +144,20 @@ app.post('/api/tokens', async (req, res) => {
   }
 });
 
+app.get('/api/pools/:wallet', async (req, res) => {
+  if (!pool || !dbReady) return res.status(503).json({ error: 'Pool history database is not configured or ready.' });
+  if (!validWallet(req.params.wallet)) return res.status(400).json({ error: 'Invalid wallet address.' });
+  try {
+    const result = await pool.query(
+      'SELECT pool_address,program_id,pool_type,base_mint,quote_mint,creator_wallet,creation_signature,status,created_at FROM pools WHERE creator_wallet=$1 ORDER BY created_at DESC LIMIT 100',
+      [req.params.wallet]
+    );
+    res.json({ pools: result.rows });
+  } catch (error) {
+    res.status(500).json({ error: 'Unable to load saved pools.' });
+  }
+});
+
 app.post('/api/pools', async (req, res) => {
   try {
     if (!pool || !dbReady) return res.status(503).json({ error: 'PostgreSQL is not configured or ready.' });
