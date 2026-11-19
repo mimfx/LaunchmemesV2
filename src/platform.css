@@ -5,3 +5,5 @@
 .row-actions{display:flex;align-items:center;gap:10px}.use-token{border:1px solid #51448b;background:#1b1731;color:#cfc2ff;border-radius:6px;padding:6px 9px;font:600 10px 'DM Sans';cursor:pointer;white-space:nowrap}.x-search{display:flex;gap:10px;margin:20px 0}.x-search input{flex:1;min-width:0;background:#0b0e19;border:1px solid #30334a;border-radius:8px;padding:12px;color:#fff}.retrieved{color:#8588a0;font-size:10px}.x-post{border-top:1px solid #292c40;padding:16px 0}.x-post p{color:#e3e4ee;margin:0 0 10px;white-space:pre-wrap}.x-post small{color:#888ba2}.x-post a{display:inline-flex;gap:5px;align-items:center;color:#b8a6ff;font-size:10px;margin-left:14px;text-decoration:none}@media(max-width:560px){.x-search{flex-direction:column}}
 
 .liquidity-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.liquidity-tabs button{border:1px solid #30334a;background:#0d1020;color:#a4a6ba;border-radius:8px;padding:10px 13px;font:600 11px 'DM Sans';cursor:pointer}.liquidity-tabs button.chosen{background:#282044;border-color:#6653a4;color:#d6caff}.liquidity-card{max-width:850px}
+
+.liquidity-tabs{margin-bottom:22px}.liquidity-card .step{white-space:nowrap}
