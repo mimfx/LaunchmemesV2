@@ -17,7 +17,7 @@ A non-custodial Solana Mainnet-Beta token launch workspace. All on-chain actions
 
 ## Setup
 
-Node.js 20+ recommended.
+Node.js 22.12+ required.
 
 ```bash
 npm install
