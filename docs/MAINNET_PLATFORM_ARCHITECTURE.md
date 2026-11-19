@@ -2,13 +2,13 @@
 
 ## Scope
 
-Extend the existing LaunchmemesV2 React/Vite application in place. Preserve the current launchpad UI and existing working flows. This work is isolated on the implementation/mainnet-platform branch; production main is not changed by this planning commit.
+Replace the legacy LaunchmemesV2 frontend and placeholder implementation with the new platform on the implementation/mainnet-platform branch. Preserve only essential build/deployment configuration and Git history. Production main remains untouched until explicit owner approval.
 
 Production chain: **Solana Mainnet-Beta only**. Do not silently fall back to Devnet. Every transaction must be constructed by the application, reviewed in the UI, signed by the connected wallet, submitted to the configured mainnet RPC, and confirmed before the UI reports success.
 
 ## Target architecture
 
-React + Vite + TypeScript + Tailwind
+React + Vite (current frontend is JavaScript; migrate feature modules to TypeScript incrementally) + Tailwind-ready design system
   - App shell / route pages
   - Wallet provider (Phantom, Solflare, Backpack, wallet-standard)
   - Feature modules: token creation, discovery/copy, Raydium liquidity, X tracker, transaction history
@@ -64,7 +64,7 @@ shared/src/ — shared schemas and types
 ## Feature implementation sequence
 
 ### Phase 0 — Baseline and safe foundation
-- Keep the current UI and existing behavior intact.
+- Inventory the repository, replace the legacy UI, and preserve only required deployment/build configuration.
 - Inventory current source files and routes before changing them.
 - Add TypeScript, shared validation/types, environment validation, route structure, error boundaries, and build/test checks.
 - Add a visible Mainnet-Beta indicator and a hard cluster guard.
