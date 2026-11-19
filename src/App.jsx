@@ -5,7 +5,7 @@ import { ArrowUpRight, BarChart3, CircleDollarSign, Copy, ExternalLink, Flame, L
 import './platform.css';
 
 const MAINNET_RPC = import.meta.env.VITE_SOLANA_MAINNET_RPC_URL || clusterApiUrl('mainnet-beta');
-const MAINNET_GENESIS = '5eykt4UsFv8P8NJdTREpY1vfKx6jQw1q6fJz8J4K8K8';
+const MAINNET_GENESIS = '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2';
 const NAV = [{id:'discover',label:'Discover',icon:BarChart3},{id:'create',label:'Create Token',icon:Plus},{id:'liquidity',label:'Liquidity',icon:Layers3},{id:'copy',label:'Copy Trending',icon:Copy},{id:'tracker',label:'X Tracker',icon:Flame}];
 
 function App(){
