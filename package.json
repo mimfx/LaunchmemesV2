@@ -28,6 +28,9 @@
     "@metaplex-foundation/mpl-token-metadata": "3.4.0",
     "pg": "^8.13.1",
     "helmet": "^8.0.0",
-    "express-rate-limit": "^7.5.0"
+    "express-rate-limit": "^7.5.0",
+    "@raydium-io/raydium-sdk-v2": "0.2.64-alpha",
+    "bn.js": "^5.2.1",
+    "decimal.js": "^10.4.3"
   }
 }
