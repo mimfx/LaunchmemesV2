@@ -143,6 +143,46 @@ app.post('/api/tokens', async (req, res) => {
   }
 });
 
+app.post('/api/pools', async (req, res) => {
+  try {
+    if (!pool || !dbReady) return res.status(503).json({ error: 'PostgreSQL is not configured or ready.' });
+    const { poolAddress, mintA, mintB, creatorWallet, signature } = req.body || {};
+    if (![poolAddress,mintA,mintB,creatorWallet].every(validWallet) || mintA === mintB) return res.status(400).json({ error: 'Invalid pool or mint address.' });
+    const tx = await verifiedTransaction(signature, creatorWallet);
+    const keys = tx.transaction.message.getAccountKeys().staticAccountKeys.map(k => k.toBase58());
+    if (!keys.includes(poolAddress)) return res.status(400).json({ error: 'Confirmed transaction does not include the supplied pool account.' });
+    const account = await connection.getAccountInfo(new PublicKey(poolAddress), 'confirmed');
+    if (!account) return res.status(400).json({ error: 'Pool account does not exist on Mainnet.' });
+    const programId = account.owner.toBase58();
+    await pool.query('INSERT INTO pools (pool_address,program_id,pool_type,base_mint,quote_mint,creator_wallet,creation_signature,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (pool_address) DO NOTHING',
+      [poolAddress,programId,'raydium-cpmm',mintA,mintB,creatorWallet,signature,'confirmed']);
+    await pool.query('INSERT INTO transactions (signature,wallet_address,type,pool_address,status,slot,block_time) VALUES ($1,$2,$3,$4,$5,$6,CASE WHEN $7::bigint IS NULL THEN NULL ELSE to_timestamp($7) END) ON CONFLICT (signature) DO NOTHING',
+      [signature,creatorWallet,'pool_create',poolAddress,'confirmed',tx.slot,tx.blockTime || null]);
+    res.status(201).json({ saved: true, poolAddress, programId, signature });
+  } catch (error) {
+    console.error('Pool record rejected:', error);
+    res.status(400).json({ error: error.message || 'Could not verify pool creation.' });
+  }
+});
+
+app.post('/api/transactions', async (req, res) => {
+  try {
+    if (!pool || !dbReady) return res.status(503).json({ error: 'PostgreSQL is not configured or ready.' });
+    const { signature, walletAddress, type, relatedMint = null, poolAddress = null } = req.body || {};
+    const allowed = ['liquidity_add','liquidity_remove','pool_create'];
+    if (!allowed.includes(type) || (relatedMint && !validWallet(relatedMint)) || (poolAddress && !validWallet(poolAddress))) return res.status(400).json({ error: 'Invalid transaction record.' });
+    const tx = await verifiedTransaction(signature,walletAddress);
+    const keys = tx.transaction.message.getAccountKeys().staticAccountKeys.map(k => k.toBase58());
+    if (poolAddress && !keys.includes(poolAddress)) return res.status(400).json({ error: 'Transaction does not reference the supplied pool.' });
+    if (relatedMint && !keys.includes(relatedMint)) return res.status(400).json({ error: 'Transaction does not reference the supplied mint.' });
+    await pool.query('INSERT INTO transactions (signature,wallet_address,type,related_mint,pool_address,status,slot,block_time) VALUES ($1,$2,$3,$4,$5,$6,$7,CASE WHEN $8::bigint IS NULL THEN NULL ELSE to_timestamp($8) END) ON CONFLICT (signature) DO NOTHING',
+      [signature,walletAddress,type,relatedMint,poolAddress,'confirmed',tx.slot,tx.blockTime || null]);
+    res.status(201).json({ saved: true, signature, slot: tx.slot });
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'Could not verify transaction.' });
+  }
+});
+
 app.get('/api/transactions/:wallet', async (req, res) => {
   if (!pool || !dbReady) return res.status(503).json({ error: 'Transaction history database is not configured.' });
   if (!validWallet(req.params.wallet)) return res.status(400).json({ error: 'Invalid wallet address.' });
