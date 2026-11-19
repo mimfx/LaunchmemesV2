@@ -133,8 +133,8 @@ app.post('/api/tokens', async (req, res) => {
     await pool.query('INSERT INTO tokens (mint_address,creator_wallet,name,symbol,decimals,supply,metadata_uri,image_uri,creation_signature) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (mint_address) DO NOTHING',
       [mintAddress,creatorWallet,String(name).slice(0,32),String(symbol).slice(0,10),decimals,String(supply),metadataUri,imageUri,signature]);
     const slot = tx.slot;
-    await pool.query('INSERT INTO transactions (signature,wallet_address,type,related_mint,status,slot) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (signature) DO NOTHING',
-      [signature,creatorWallet,'token_create',mintAddress,'confirmed',slot]);
+    await pool.query('INSERT INTO transactions (signature,wallet_address,type,related_mint,status,slot,block_time) VALUES ($1,$2,$3,$4,$5,$6,CASE WHEN $7::bigint IS NULL THEN NULL ELSE to_timestamp($7) END) ON CONFLICT (signature) DO NOTHING',
+      [signature,creatorWallet,'token_create',mintAddress,'confirmed',slot,tx.blockTime || null]);
     await pool.query('INSERT INTO users (wallet_address) VALUES ($1) ON CONFLICT (wallet_address) DO UPDATE SET last_seen_at=NOW()', [creatorWallet]);
     res.status(201).json({ saved: true, mintAddress, signature, slot });
   } catch (error) {
