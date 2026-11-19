@@ -127,3 +127,17 @@ A feature is complete only when it has a real provider/on-chain implementation, 
 ## Current known baseline
 
 The repository README describes a React/Vite launchpad shell with sample discovery rows, a preview-only token form, placeholder liquidity/X pages, and a wallet-selection modal that is not yet connected to wallet adapters. The existing package.json includes Solana web3, wallet adapter, SPL Token, Metaplex metadata, Express and Multer dependencies. These are starting points, not proof that production features are implemented.
+
+## Implementation status — 2026-11-19
+
+The legacy frontend has been replaced on `implementation/mainnet-platform`. Current code includes:
+
+- Mainnet-only wallet adapters and confirmed SOL balance reads.
+- SPL token creation with Pinata image/metadata upload, Metaplex metadata instruction, wallet approval and on-chain confirmation.
+- DexScreener market discovery and copy-to-new-token draft flow.
+- Raydium CPMM pool discovery by mint pair, create pool, add liquidity and remove liquidity using pinned SDK v2. CPMM pool account ownership is checked before persistence; LP balance is checked before withdrawal.
+- Official X API v2 recent search route and UI, gated by server credentials.
+- PostgreSQL schema and verified token/pool/transaction records.
+- CI build and server syntax checks.
+
+Still required before production release: configure real Render environment variables and PostgreSQL; exercise all flows with low-value Mainnet transactions; verify Pinata and X API plans; implement wallet nonce authentication and wallet-owned LP-position inventory; add integration tests and monitoring; review security, fee disclosure, slippage and SDK upgrade compatibility. Do not merge or deploy to production before owner approval.
